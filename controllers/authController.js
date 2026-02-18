@@ -101,20 +101,20 @@ exports.login = async (req, res) => {
     );
 
     // for Production
-    // res.cookie("token", token, {
-    //   httpOnly: true,
-    //   secure: true,
-    //   sameSite: "None",
-    //   maxAge: 7 * 24 * 60 * 60 * 1000, // Cookie expires in 7 days
-    // });
-
-    // For Testing
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false, // allow over HTTP
-      sameSite: "Lax", // works fine for same-domain requests
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      secure: true,
+      sameSite: "None",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // Cookie expires in 7 days
     });
+
+    // For Testing
+    // res.cookie("token", token, {
+    //   httpOnly: true,
+    //   secure: false, // allow over HTTP
+    //   sameSite: "Lax", // works fine for same-domain requests
+    //   maxAge: 7 * 24 * 60 * 60 * 1000,
+    // });
 
     res.status(successCode).json({ message: "Login successful", token });
   } catch (error) {

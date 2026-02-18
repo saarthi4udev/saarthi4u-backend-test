@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 
-const issueJwt = (res, user) => {
+module.exports = function issueJwt(res, user) {
   const token = jwt.sign(
     { id: user.id, role: user.role },
     process.env.JWT_SECRET,
@@ -9,12 +9,10 @@ const issueJwt = (res, user) => {
 
   res.cookie("token", token, {
     httpOnly: true,
-    sameSite: "Lax",
-    secure: false,
+    secure: true,        // ✅ required for HTTPS
+    sameSite: "none",    // ✅ required for cross-domain
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
   return token;
 };
-
-module.exports = issueJwt;
