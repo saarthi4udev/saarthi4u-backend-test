@@ -30,6 +30,14 @@ const College = sequelize.define(
             type: DataTypes.STRING,
             allowNull: true,
         },
+        logo: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        bannerImg: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
 
         type: {
             type: DataTypes.ENUM("college", "university"),

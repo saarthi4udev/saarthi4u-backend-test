@@ -8,16 +8,24 @@ const facilityRoutes = require("./facilityRoutes");
 const facultyRoutes = require("./facultyRoutes");
 const faqRoutes = require("./faqRoutes");
 const feeRoutes = require("./feeRoutes");
-// const placementRoutes = require("./placementRoutes");
-// const recruiterRoutes = require("./recruiterRoutes");
+const placementRoutes = require("./placementRoutes");
+const recruiterRoutes = require("./recruiterRoutes");
 const reviewRoutes = require("./reviewRoutes");
-// const galleryRoutes = require("./galleryRoutes");
+const galleryRoutes = require("./galleryRoutes");
+const courseRoutes = require("./courseRoutes");
+const examRoutes = require("./examRoutes");
+const blogRoutes = require("./blogRoutes");
+const newsRoutes = require("./newsRoutes");
+const contactRoutes = require("./contactRoutes");
+const scholarshipRoutes = require("./scholarshipRoutes");
+const internationalCollegeRoutes = require("./internationalCollegeRoutes");
 
 const index = (app) => {
 
   // Register all routes
   app.use("/api/auth", authRoutes);
   app.use("/api/category", categoryRoutes);
+  app.use("/api/course", courseRoutes);
   app.use("/api/admission", admissionRoutes);
   app.use("/api/college", collegeRoutes);
   app.use("/api/cutoff", cutoffRoutes);
@@ -25,10 +33,16 @@ const index = (app) => {
   app.use("/api/faculty", facultyRoutes);
   app.use("/api/faq", faqRoutes);
   app.use("/api/fee", feeRoutes);
-  // app.use("/api/placement", placementRoutes);
-  // app.use("/api/recruiter", recruiterRoutes);
+  app.use("/api/placement", placementRoutes);
+  app.use("/api/recruiter", recruiterRoutes);
   app.use("/api/review", reviewRoutes);
-  // app.use("/api/gallery", galleryRoutes);
+  app.use("/api/gallery", galleryRoutes);
+  app.use("/api/exam", examRoutes);
+  app.use("/api/blog", blogRoutes);
+  app.use("/api/news", newsRoutes);
+  app.use("/api/scholarship", scholarshipRoutes);
+  app.use("/api/international", internationalCollegeRoutes);
+  app.use("/api/contact", contactRoutes);
 
   // 404 handler - must be after all routes
   app.all("*", (req, res) => {

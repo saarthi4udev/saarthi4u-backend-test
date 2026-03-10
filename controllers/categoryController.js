@@ -1,4 +1,19 @@
 const Category = require("../models/Category");
+const College = require("../models/College");
+const Course = require("../models/Course");
+const Admission = require("../models/Admission");
+const Cutoff = require("../models/Cutoff");
+const Facility = require("../models/Facility");
+const Faculty = require("../models/Faculty");
+const FAQ = require("../models/FAQ");
+const Fee = require("../models/Fee");
+const Review = require("../models/Review");
+const Gallery = require("../models/Gallery");
+const Placement = require("../models/Placement");
+const Recruiter = require("../models/Recruiter");
+const Exam = require("../models/Exam");
+const Blog = require("../models/Blog");
+const News = require("../models/News");
 const {
     successCode,
     notFoundCode,
@@ -206,5 +221,92 @@ exports.deleteCategory = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(badGatewayCode).json({ error: "Server error" });
+    }
+};
+
+/**
+ * Get Category Content
+ */
+exports.getCategoryContent = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const category = await Category.findByPk(id);
+
+        if (!category || (!category.visible && !isAdmin(req))) {
+            return res.status(notFoundCode).json({
+                error: "Category not found",
+            });
+        }
+
+        const visibilityCondition = isAdmin(req)
+            ? {}
+            : { visible: true };
+
+        // ✅ Colleges with includes (FIXED)
+        const colleges = await College.findAll({
+            where: {
+                categoryId: id,
+                ...visibilityCondition,
+            },
+            include: [
+                { model: Category },
+                {
+                    model: Course,
+                    include: [{ model: Fee }],
+                },
+                { model: Admission },
+                { model: Cutoff },
+                { model: Facility },
+                { model: Faculty },
+                { model: FAQ },
+                { model: Review },
+                { model: Gallery },
+                { model: Placement },
+                { model: Recruiter },
+            ],
+            order: [["createdAt", "DESC"]],
+        });
+
+        // ✅ Exams
+        const exams = await Exam.findAll({
+            where: {
+                categoryId: id,
+                ...visibilityCondition,
+            },
+            order: [["createdAt", "DESC"]],
+        });
+
+        // Blogs
+        const blogs = await Blog.findAll({
+            where: {
+                categoryId: id,
+                ...visibilityCondition,
+            },
+            order: [["createdAt", "DESC"]],
+        });
+
+        // News
+        const news = await News.findAll({
+            where: {
+                categoryId: id,
+                ...visibilityCondition,
+            },
+            order: [["createdAt", "DESC"]],
+        });
+
+        return res.status(successCode).json({
+            category,
+            colleges,
+            exams,
+            blogs,
+            news
+        });
+
+    } catch (error) {
+        console.error("Get category content error:", error);
+        return res.status(badGatewayCode).json({
+            error: "Server error",
+        });
     }
 };

@@ -6,6 +6,7 @@ const {
     getCategoryById,
     updateCategory,
     deleteCategory,
+    getCategoryContent
 } = require("../controllers/categoryController");
 
 const { verifyToken } = require("../middlewares/authMiddleware");
@@ -46,7 +47,7 @@ router.get(
             .withMessage("visible must be true or false or all"),
     ],
     getCategories
-);  
+);
 
 /**
  * Get category by ID (Public)
@@ -72,6 +73,18 @@ router.put(
         body("visible").optional().isBoolean(),
     ],
     updateCategory
+);
+
+/**
+ * Get Category Content
+ */
+router.get(
+    "/content/:id",
+    loggerMiddleware,
+    [
+        param("id").isInt().withMessage("Invalid category ID"),
+    ],
+    getCategoryContent
 );
 
 /**

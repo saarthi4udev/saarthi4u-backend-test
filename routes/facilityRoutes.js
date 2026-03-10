@@ -11,20 +11,57 @@ const loggerMiddleware = require("../middlewares/logMiddleware");
 
 const router = express.Router();
 
-router.post("/create", verifyToken, loggerMiddleware, createFacility);
+/** Create Facility */
+router.post(
+  "/create",
+  verifyToken,
+  loggerMiddleware,
+  [
+    body("collegeId")
+      .isInt()
+      .withMessage("College ID must be an integer")
+      .notEmpty()
+      .withMessage("College ID is required"),
 
+    body("name")
+      .isString()
+      .isLength({ min: 2, max: 150 })
+      .withMessage("Facility name must be 2–150 characters long"),
+
+    body("description")
+      .optional()
+      .isString()
+      .withMessage("Description must be a string"),
+  ],
+  createFacility
+);
+
+/** Get Facilities by College */
 router.get(
   "/college/:collegeId",
   loggerMiddleware,
-  [param("collegeId").isInt()],
+  [
+    param("collegeId")
+      .isInt()
+      .withMessage("College ID must be an integer")
+      .notEmpty()
+      .withMessage("College ID is required"),
+  ],
   getFacilitiesByCollege
 );
 
+/** Delete Facility */
 router.delete(
   "/delete/:id",
   verifyToken,
   loggerMiddleware,
-  [param("id").isInt()],
+  [
+    param("id")
+      .isInt()
+      .withMessage("Facility ID must be an integer")
+      .notEmpty()
+      .withMessage("Facility ID is required"),
+  ],
   deleteFacility
 );
 

@@ -12,10 +12,26 @@ const Gallery = require("../models/Gallery");
 const FAQ = require("../models/FAQ");
 const User = require("../models/User");
 const Cutoff = require("../models/Cutoff");
+const Exam = require("../models/Exam");
+const Blog = require("../models/Blog");
+const News = require("../models/News");
 
 // Category → College
 Category.hasMany(College, { foreignKey: "categoryId" });
 College.belongsTo(Category, { foreignKey: "categoryId" });
+
+// Category -> Exam
+Category.hasMany(Exam, { foreignKey: "categoryId" });
+Exam.hasMany(Category, { foreignKey: "categoryId" })
+
+// Category -> Blog
+Category.hasMany(Blog, { foreignKey: "categoryId" });
+Blog.hasMany(Category, { foreignKey: "categoryId" })
+
+// Category -> News
+Category.hasMany(News, { foreignKey: "categoryId" });
+News.hasMany(Category, { foreignKey: "categoryId" })
+
 
 // College relations
 College.hasMany(Course, { foreignKey: "collegeId" });

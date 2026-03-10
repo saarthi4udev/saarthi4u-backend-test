@@ -35,6 +35,23 @@ exports.getCourseById = async (req, res) => {
     }
 };
 
+exports.getCoursesByCollege = async (req, res) => {
+    try {
+        const courses = await Course.findAll({
+            where: { collegeId: req.params.collegeId },
+            include: College,
+        });
+
+        if(!courses) return res.status(notFoundCode).json({error: "Not found"});
+
+        res.status(successCode).json({ data: courses });
+    } catch (error) {
+        console.error("Get courses by college error:", error);
+        res.status(badGatewayCode).json({ error: "Server error" });
+    }
+}
+
+
 exports.updateCourse = async (req, res) => {
     try {
         if (!isAdmin(req)) return res.status(403).json({ error: "Access denied" });
