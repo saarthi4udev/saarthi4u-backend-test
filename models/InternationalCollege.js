@@ -19,7 +19,6 @@ const InternationalCollege = sequelize.define(
         slug: {
             type: DataTypes.STRING,
             allowNull: false,
-            unique: true,
         },
 
         description: {

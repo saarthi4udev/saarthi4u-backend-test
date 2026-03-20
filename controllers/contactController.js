@@ -12,11 +12,11 @@ const isAdmin = (req) => req.user?.role === "admin";
  */
 exports.createContact = async (req, res) => {
     try {
-        const { name, email, subject, message } = req.body;
+        const { name, email, subject, message, courseInterest, preferredLocation } = req.body;
 
-        if (!name || !email || !subject || !message) {
+        if (!name || !email || !subject || !message || !courseInterest || !preferredLocation) {
             return res.status(400).json({
-                error: "Name, email, subject and message are required",
+                error: "All fields including course interest and preferred location are required",
             });
         }
 

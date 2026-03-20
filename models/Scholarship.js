@@ -24,7 +24,6 @@ const Scholarship = sequelize.define(
         slug: {
             type: DataTypes.STRING,
             allowNull: false,
-            unique: true,
         },
 
         shortName: {

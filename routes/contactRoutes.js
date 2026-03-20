@@ -22,6 +22,21 @@ router.post(
         body("email").isEmail(),
         body("subject").isString().isLength({ min: 3 }),
         body("message").isString().isLength({ min: 5 }),
+
+        body("courseInterest")
+            .optional()
+            .isString()
+            .isLength({ min: 2 }),
+
+        body("preferredLocation")
+            .optional()
+            .isString()
+            .isLength({ min: 2 }),
+
+        body("phone")
+            .optional()
+            .isString()
+            .isLength({ min: 7, max: 15 }),
     ],
     createContact
 );

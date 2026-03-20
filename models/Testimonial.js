@@ -1,8 +1,8 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 
-const Contact = sequelize.define(
-    "Contact",
+const Testimonial = sequelize.define(
+    "Testimonial",
     {
         id: {
             type: DataTypes.UUID,
@@ -10,36 +10,38 @@ const Contact = sequelize.define(
             primaryKey: true,
         },
 
+        avatarUrl: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+
+        quote: {
+            type: DataTypes.TEXT,
+            allowNull: false,
+        },
+
         name: {
             type: DataTypes.STRING,
             allowNull: false,
         },
 
-        email: {
+        role: {
             type: DataTypes.STRING,
             allowNull: false,
         },
 
-        phone: DataTypes.STRING,
-
-        subject: {
+        city: {
             type: DataTypes.STRING,
             allowNull: false,
         },
 
-        message: {
-            type: DataTypes.TEXT,
+        rating: {
+            type: DataTypes.INTEGER,
             allowNull: false,
-        },
-        
-        courseInterest: {
-            type: DataTypes.STRING,
-            allowNull: true,
-        },
-
-        preferredLocation: {
-            type: DataTypes.STRING,
-            allowNull: true,
+            validate: {
+                min: 1,
+                max: 5,
+            },
         },
 
         deletedAt: DataTypes.DATE,
@@ -50,4 +52,4 @@ const Contact = sequelize.define(
     }
 );
 
-module.exports = Contact;
+module.exports = Testimonial;

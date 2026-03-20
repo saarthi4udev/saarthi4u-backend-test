@@ -24,7 +24,6 @@ const Exam = sequelize.define(
         slug: {
             type: DataTypes.STRING,
             allowNull: false,
-            unique: true,
         },
 
         shortName: {
