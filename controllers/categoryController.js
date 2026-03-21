@@ -249,22 +249,22 @@ exports.getCategoryContent = async (req, res) => {
                 categoryId: id,
                 ...visibilityCondition,
             },
-            include: [
-                { model: Category },
-                {
-                    model: Course,
-                    include: [{ model: Fee }],
-                },
-                { model: Admission },
-                { model: Cutoff },
-                { model: Facility },
-                { model: Faculty },
-                { model: FAQ },
-                { model: Review },
-                { model: Gallery },
-                { model: Placement },
-                { model: Recruiter },
-            ],
+            // include: [
+            //     { model: Category },
+            //     {
+            //         model: Course,
+            //         include: [{ model: Fee }],
+            //     },
+            //     { model: Admission },
+            //     { model: Cutoff },
+            //     { model: Facility },
+            //     { model: Faculty },
+            //     { model: FAQ },
+            //     { model: Review },
+            //     { model: Gallery },
+            //     { model: Placement },
+            //     { model: Recruiter },
+            // ],
             order: [["createdAt", "DESC"]],
         });
 
