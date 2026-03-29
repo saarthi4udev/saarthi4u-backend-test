@@ -140,32 +140,67 @@ exports.getCollegeByIdOrSlug = async (req, res) => {
 
         const college = await College.findOne({
             where: whereCondition,
+
             include: [
                 { model: Category },
+
                 {
                     model: Course,
-                    include: [Fee],
+                    limit: 20,
+                    include: [
+                        {
+                            model: Fee,
+                            limit: 5
+                        }
+                    ]
                 },
+
                 { model: Admission },
                 { model: Cutoff },
                 { model: Facility },
-                { model: Faculty },
-                { model: FAQ },
-                { model: Review },
-                { model: Gallery },
+
+                {
+                    model: Faculty,
+                    limit: 20
+                },
+
+                {
+                    model: FAQ,
+                    limit: 10
+                },
+
+                // 🔥 Critical for memory safety
+                {
+                    model: Review,
+                    separate: true,
+                    limit: 10,
+                    order: [['createdAt', 'DESC']]
+                },
+
+                {
+                    model: Gallery,
+                    separate: true,
+                    limit: 20
+                },
+
                 { model: Placement },
-                { model: Recruiter },
-            ],
+
+                {
+                    model: Recruiter,
+                    limit: 20
+                }
+            ]
         });
 
         if (!college || (!college.visible && !isAdmin(req))) {
             return res.status(notFoundCode).json({ error: "College not found" });
         }
 
-        res.status(successCode).json({ data: college });
+        return res.status(successCode).json({ data: college });
+
     } catch (error) {
         console.error("Get college error:", error);
-        res.status(badGatewayCode).json({ error: "Server error" });
+        return res.status(badGatewayCode).json({ error: "Server error" });
     }
 };
 
@@ -525,5 +560,48 @@ exports.compareColleges = async (req, res) => {
     } catch (error) {
         console.error("Compare colleges error:", error);
         res.status(badGatewayCode).json({ error: "Server error" });
+    }
+};
+
+
+/**
+ *  Get College/ University COUNT
+ */
+exports.getCollegeUniversityCount = async (req, res) => {
+    try {
+        const counts = await College.findAll({
+            attributes: [
+                "type",
+                [fn("COUNT", col("id")), "count"],
+            ],
+            group: ["type"],
+        });
+
+        let collegeCount = 0;
+        let universityCount = 0;
+
+        counts.forEach((item) => {
+            if (item.type === "college") {
+                collegeCount = parseInt(item.dataValues.count);
+            }
+            if (item.type === "university") {
+                universityCount = parseInt(item.dataValues.count);
+            }
+        });
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                colleges: collegeCount,
+                universities: universityCount,
+                total: collegeCount + universityCount,
+            },
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
     }
 };

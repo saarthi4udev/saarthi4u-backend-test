@@ -1,5 +1,5 @@
 const express = require("express");
-const { body, param } = require("express-validator");
+const { body, param, query } = require("express-validator");
 
 const {
     createTestimonial,
@@ -30,7 +30,12 @@ router.post(
 );
 
 /** Get All Testimonials (Public) */
-router.get("/all", loggerMiddleware, getAllTestimonials);
+router.get("/all", loggerMiddleware,
+    [
+        query("page").optional().isInt({ min: 1 }),
+        query("limit").optional().isInt({ min: 1, max: 100 }),
+    ],
+    getAllTestimonials);
 
 /** Get Single Testimonial */
 router.get(

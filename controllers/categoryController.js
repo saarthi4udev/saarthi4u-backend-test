@@ -231,6 +231,20 @@ exports.getCategoryContent = async (req, res) => {
     try {
         const { id } = req.params;
 
+        const {
+            page = 1,
+            limit = 10,
+
+            examPage = 1,
+            examLimit = 10,
+
+            blogPage = 1,
+            blogLimit = 10,
+
+            newsPage = 1,
+            newsLimit = 10,
+        } = req.query;
+
         const category = await Category.findByPk(id);
 
         if (!category || (!category.visible && !isAdmin(req))) {
@@ -243,64 +257,88 @@ exports.getCategoryContent = async (req, res) => {
             ? {}
             : { visible: true };
 
-        // ✅ Colleges with includes (FIXED)
-        const colleges = await College.findAll({
+        // 🔹 Colleges
+        const collegeOffset = (page - 1) * limit;
+
+        const colleges = await College.findAndCountAll({
             where: {
                 categoryId: id,
                 ...visibilityCondition,
             },
-            // include: [
-            //     { model: Category },
-            //     {
-            //         model: Course,
-            //         include: [{ model: Fee }],
-            //     },
-            //     { model: Admission },
-            //     { model: Cutoff },
-            //     { model: Facility },
-            //     { model: Faculty },
-            //     { model: FAQ },
-            //     { model: Review },
-            //     { model: Gallery },
-            //     { model: Placement },
-            //     { model: Recruiter },
-            // ],
+            limit: parseInt(limit),
+            offset: parseInt(collegeOffset),
             order: [["createdAt", "DESC"]],
         });
 
-        // ✅ Exams
-        const exams = await Exam.findAll({
+        // 🔹 Exams
+        const examOffset = (examPage - 1) * examLimit;
+
+        const exams = await Exam.findAndCountAll({
             where: {
                 categoryId: id,
                 ...visibilityCondition,
             },
+            limit: parseInt(examLimit),
+            offset: parseInt(examOffset),
             order: [["createdAt", "DESC"]],
         });
 
-        // Blogs
-        const blogs = await Blog.findAll({
+        // 🔹 Blogs
+        const blogOffset = (blogPage - 1) * blogLimit;
+
+        const blogs = await Blog.findAndCountAll({
             where: {
                 categoryId: id,
                 ...visibilityCondition,
             },
+            limit: parseInt(blogLimit),
+            offset: parseInt(blogOffset),
             order: [["createdAt", "DESC"]],
         });
 
-        // News
-        const news = await News.findAll({
+        // 🔹 News
+        const newsOffset = (newsPage - 1) * newsLimit;
+
+        const news = await News.findAndCountAll({
             where: {
                 categoryId: id,
                 ...visibilityCondition,
             },
+            limit: parseInt(newsLimit),
+            offset: parseInt(newsOffset),
             order: [["createdAt", "DESC"]],
         });
 
         return res.status(successCode).json({
             category,
-            colleges,
-            exams,
-            blogs,
-            news
+
+            colleges: {
+                total: colleges.count,
+                page: parseInt(page),
+                totalPages: Math.ceil(colleges.count / limit),
+                data: colleges.rows,
+            },
+
+            exams: {
+                total: exams.count,
+                page: parseInt(examPage),
+                totalPages: Math.ceil(exams.count / examLimit),
+                data: exams.rows,
+            },
+
+            blogs: {
+                total: blogs.count,
+                page: parseInt(blogPage),
+                totalPages: Math.ceil(blogs.count / blogLimit),
+                data: blogs.rows,
+            },
+
+            news: {
+                total: news.count,
+                page: parseInt(newsPage),
+                totalPages: Math.ceil(news.count / newsLimit),
+                data: news.rows,
+            },
         });
 
     } catch (error) {

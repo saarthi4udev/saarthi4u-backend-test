@@ -9,6 +9,7 @@ const {
     getFilterData,
     filterColleges,
     compareColleges,
+    getCollegeUniversityCount
 } = require("../controllers/collegeController");
 
 const { verifyToken } = require("../middlewares/authMiddleware");
@@ -149,12 +150,11 @@ router.get("/compare",
     [body("collegeIds").isArray({ min: 2, max: 4 }).withMessage("College IDs must be an array of 2 to 4 integers"),
     ], loggerMiddleware, compareColleges);
 
-/** Get single college */
+/** Get college/university count */
 router.get(
-    "/:idOrSlug",
+    "/count",
     loggerMiddleware,
-    [param("idOrSlug").notEmpty().withMessage("ID or Slug is required")],
-    getCollegeByIdOrSlug
+    getCollegeUniversityCount
 );
 
 /** Update college */
@@ -173,6 +173,14 @@ router.delete(
     loggerMiddleware,
     [param("id").isInt().withMessage("ID must be an integer")],
     deleteCollege
+);
+
+/** Get single college */
+router.get(
+    "/:idOrSlug",
+    loggerMiddleware,
+    [param("idOrSlug").notEmpty().withMessage("ID or Slug is required")],
+    getCollegeByIdOrSlug
 );
 
 module.exports = router;

@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node --max-old-space-size=4096 --initial-old-space-size=256 --max-semi-space-size=128 index.js",
-    "dev": "nodemon --max-old-space-size=4096 --initial-old-space-size=256 --max-semi-space-size=128 index.js",
+    "start": "node index.js",
+    "dev": "nodemon index.js",
     "stop": "taskkill /F /IM node.exe",
     "restart": "npm run stop && npm start",
     "clean-start": "taskkill /F /IM node.exe /T && timeout /t 2 && npm start"

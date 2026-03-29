@@ -82,7 +82,46 @@ router.get(
     "/content/:id",
     loggerMiddleware,
     [
-        param("id").isInt().withMessage("Invalid category ID"),
+        param("id")
+            .isInt()
+            .withMessage("Invalid category ID"),
+
+        query("page")
+            .optional()
+            .isInt({ min: 1 })
+            .withMessage("Page must be a positive integer"),
+
+        query("limit")
+            .optional()
+            .isInt({ min: 1, max: 100 })
+            .withMessage("Limit must be between 1 and 100"),
+
+        // 🔹 Exams pagination
+        query("examPage")
+            .optional()
+            .isInt({ min: 1 }),
+
+        query("examLimit")
+            .optional()
+            .isInt({ min: 1, max: 100 }),
+
+        // 🔹 Blogs pagination
+        query("blogPage")
+            .optional()
+            .isInt({ min: 1 }),
+
+        query("blogLimit")
+            .optional()
+            .isInt({ min: 1, max: 100 }),
+
+        // 🔹 News pagination
+        query("newsPage")
+            .optional()
+            .isInt({ min: 1 }),
+
+        query("newsLimit")
+            .optional()
+            .isInt({ min: 1, max: 100 }),
     ],
     getCategoryContent
 );

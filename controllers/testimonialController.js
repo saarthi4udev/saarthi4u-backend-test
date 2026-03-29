@@ -40,13 +40,27 @@ exports.createTestimonial = async (req, res) => {
 /** Get All Testimonials (Public) */
 exports.getAllTestimonials = async (req, res) => {
     try {
-        const testimonials = await Testimonial.findAll({
+        let { page = 1, limit = 10 } = req.query;
+
+        page = parseInt(page);
+        limit = parseInt(limit);
+
+        const offset = (page - 1) * limit;
+
+        const testimonials = await Testimonial.findAndCountAll({
+            limit,
+            offset,
             order: [["createdAt", "DESC"]],
         });
 
         return res.status(successCode).json({
-            data: testimonials,
+            success: true,
+            total: testimonials.count,
+            page,
+            totalPages: Math.ceil(testimonials.count / limit),
+            data: testimonials.rows,
         });
+
     } catch (error) {
         console.error(error);
         return res.status(badGatewayCode).json({
