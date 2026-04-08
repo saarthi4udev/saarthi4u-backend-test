@@ -8,6 +8,9 @@ const {
 
 const { verifyToken } = require("../middlewares/authMiddleware");
 const loggerMiddleware = require("../middlewares/logMiddleware");
+const multer = require("multer");
+
+const upload = multer({ dest: "uploads/temp/" });
 
 const router = express.Router();
 
@@ -16,17 +19,13 @@ router.post(
     "/create",
     verifyToken,
     loggerMiddleware,
+    upload.single("imageUrl"),
     [
         body("collegeId")
             .isInt()
             .withMessage("College ID must be an integer")
             .notEmpty()
             .withMessage("College ID is required"),
-
-        body("imageUrl")
-            .isString()
-            .isLength({ min: 5 })
-            .withMessage("Image URL must be a valid string"),
 
         body("caption")
             .optional()

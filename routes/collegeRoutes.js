@@ -14,6 +14,9 @@ const {
 
 const { verifyToken } = require("../middlewares/authMiddleware");
 const loggerMiddleware = require("../middlewares/logMiddleware");
+const multer = require("multer");
+
+const upload = multer({ dest: "uploads/temp/" });
 
 const router = express.Router();
 
@@ -22,6 +25,10 @@ router.post(
     "/create",
     verifyToken,
     loggerMiddleware,
+    upload.fields([
+        { name: "logo", maxCount: 1 },
+        { name: "bannerImg", maxCount: 1 },
+    ]),
     [
         body("name")
             .isString()
@@ -36,14 +43,6 @@ router.post(
             .isString()
             .isLength({ min: 2, max: 50 })
             .withMessage("Short name should be 2-50 characters"),
-        body("logo")
-            .optional()
-            .isString()
-            .withMessage("College logo URL must be string"),
-        body("bannerImg")
-            .optional()
-            .isString()
-            .withMessage("Banner Image must be string"),
         body("categoryId")
             .isInt()
             .withMessage("Category ID must be an integer"),
@@ -162,6 +161,10 @@ router.put(
     "/update/:id",
     verifyToken,
     loggerMiddleware,
+    upload.fields([
+        { name: "logo", maxCount: 1 },
+        { name: "bannerImg", maxCount: 1 },
+    ]),
     [param("id").isInt().withMessage("ID must be an integer")],
     updateCollege
 );

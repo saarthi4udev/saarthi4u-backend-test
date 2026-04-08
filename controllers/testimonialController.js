@@ -4,6 +4,8 @@ const {
     badGatewayCode,
     notFoundCode,
 } = require("../config/statuscodes");
+const fs = require("node:fs");
+const { storeImage } = require("../helpers/cloudinary");
 
 const isAdmin = (req) => req.user?.role === "admin";
 
@@ -14,16 +16,40 @@ exports.createTestimonial = async (req, res) => {
             return res.status(403).json({ error: "Access denied" });
         }
 
-        const { avatarUrl, quote, name, role, city, rating } = req.body;
+        const { quote, name, role, city, rating } = req.body;
+
+        let avatarUrl = null;
+        const folderName = "testimonials_data";
+
+        // make sure image is provided        
+        if (!req.file) {
+            return res.status(400).json({ error: "Profile image is required" });
+        }
+
+        // ===============================
+        // Upload Profile Image If Provided
+        // ===============================
+        if (req.file) {
+            const uploadResult = await storeImage(
+                req.file.path,
+                `testimonial_${name}`,
+                folderName
+            );
+
+            avatarUrl = uploadResult.url;
+
+            fs.unlinkSync(req.file.path);
+        }
 
         const testimonial = await Testimonial.create({
-            avatarUrl,
             quote,
             name,
             role,
             city,
             rating,
+            avatarUrl,
         });
+
 
         return res.status(successCode).json({
             message: "Testimonial created successfully",

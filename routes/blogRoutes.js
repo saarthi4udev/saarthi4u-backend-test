@@ -10,7 +10,9 @@ const {
 
 const { verifyToken } = require("../middlewares/authMiddleware");
 const loggerMiddleware = require("../middlewares/logMiddleware");
+const multer = require("multer");
 
+const upload = multer({ dest: "uploads/temp/" });
 const router = express.Router();
 
 /** ===============================
@@ -20,6 +22,7 @@ router.post(
     "/create",
     verifyToken,
     loggerMiddleware,
+    upload.single("featuredImage"),
     [
         body("title")
             .isString()
@@ -44,11 +47,6 @@ router.post(
             .isString()
             .notEmpty()
             .withMessage("Content is required"),
-
-        body("featuredImage")
-            .optional()
-            .isString()
-            .withMessage("Featured image must be string"),
 
         body("metaTitle")
             .optional()
@@ -137,6 +135,7 @@ router.put(
     "/update/:id",
     verifyToken,
     loggerMiddleware,
+    upload.single("featuredImage"),
     [
         param("id")
             .isUUID()

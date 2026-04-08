@@ -1,5 +1,7 @@
 const { Op } = require("sequelize");
 const Mentor = require("../models/Mentor");
+const fs = require("node:fs");
+const { storeImage } = require("../helpers/cloudinary");
 
 const isAdmin = (req) => req.user?.role === "admin";
 
@@ -22,7 +24,30 @@ exports.createMentor = async (req, res) => {
             return res.status(409).json({ error: "Mentor already exists" });
         }
 
-        const mentor = await Mentor.create(req.body);
+        let profileImage = null;
+        const folderName = "mentors_data";
+
+        // make sure image is provided        
+        if (!req.file) {
+            return res.status(400).json({ error: "Profile image is required" });
+        }
+
+        // ===============================
+        // Upload Profile Image If Provided
+        // ===============================
+        if (req.file) {
+            const uploadResult = await storeImage(
+                req.file.path,
+                `mentor_${name}`,
+                folderName
+            );
+
+            profileImage = uploadResult.url;
+
+            fs.unlinkSync(req.file.path);
+        }
+
+        const mentor = await Mentor.create({ ...req.body, profileImage });
 
         return res.status(201).json({
             message: "Mentor created successfully",
@@ -105,7 +130,24 @@ exports.updateMentor = async (req, res) => {
             return res.status(404).json({ error: "Mentor not found" });
         }
 
-        await mentor.update(req.body);
+        let profileImage = mentor.profileImage;
+        const folderName = "mentors_data";
+
+        // ===============================
+        // Upload Profile Image If Provided
+        // ===============================
+        if (req.file) {
+            const uploadResult = await storeImage(
+                req.file.path,
+                `mentor_${mentor.name}`,
+                folderName
+            );
+            profileImage = uploadResult.url;
+
+            fs.unlinkSync(req.file.path);
+        }
+
+        await mentor.update({ ...req.body, profileImage });
 
         return res.status(200).json({
             message: "Mentor updated successfully",

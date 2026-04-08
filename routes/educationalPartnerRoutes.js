@@ -11,6 +11,9 @@ const {
 
 const { verifyToken } = require("../middlewares/authMiddleware");
 const loggerMiddleware = require("../middlewares/logMiddleware");
+const multer = require("multer");
+
+const upload = multer({ dest: "uploads/temp/" });
 
 const router = express.Router();
 
@@ -19,10 +22,10 @@ router.post(
     "/create",
     verifyToken,
     loggerMiddleware,
+    upload.single("image"),
     [
         body("name").isString().notEmpty(),
         body("slug").isString().notEmpty(),
-        body("image").optional().isString(),
         body("description").optional().isString(),
         body("services").optional().isString(),
         body("tag").optional().isString(),
@@ -55,6 +58,7 @@ router.put(
     "/update/:id",
     verifyToken,
     loggerMiddleware,
+    upload.single("image"),
     [param("id").isInt()],
     updateEducationalPartner
 );

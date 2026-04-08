@@ -15,7 +15,9 @@ const { verifyToken } = require("../middlewares/authMiddleware");
 const loggerMiddleware = require("../middlewares/logMiddleware");
 const { authLimiter } = require("../middlewares/rateLimiterMiddleware");
 const { firebaseAuthMiddleware: firebaseAuth } = require("../middlewares/firebaseAuthMiddleware");
+const multer = require("multer");
 
+const upload = multer({ dest: "uploads/temp/" });
 const router = express.Router();
 
 // Register Route
@@ -81,13 +83,29 @@ router.put(
   "/updateUser/:id",
   verifyToken,
   loggerMiddleware,
+  upload.single("profileImage"),
   [
     param("id").isInt().withMessage("Invalid User ID"),
     body("email").optional().isEmail(),
     body("phone").optional().isNumeric(),
     body("name").optional().isString(),
-    body("role").optional().isIn(["teacher", "student", "staff"]),
+    body("role").optional().isIn(["admin", "user"]),
     body("address").optional().isString(),
+    body("age").optional().isInt({ min: 1, max: 120 }),
+    body("location").optional().isString(),
+    body("qualification").optional().isString(),
+    body("stream").optional().isString(),
+    body("cgpa").optional().isFloat({ min: 0, max: 10 }),
+    body("institute").optional().isString(),
+    body("careerField").optional().isString(),
+    body("careerRole").optional().isString(),
+    body("hobbies").optional().isString(),
+    body("shortTermGoal").optional().isString(),
+    body("longTermGoal").optional().isString(),
+    body("preferredLocation").optional().isString(),
+    body("budget").optional().isFloat(),
+    body("expectedSalary").optional().isFloat(),
+    body("learningStyle").optional().isString(),
     body("phone")
       .optional()
       .isNumeric()

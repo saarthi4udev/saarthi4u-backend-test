@@ -6,6 +6,8 @@ const {
     badGatewayCode,
     notFoundCode,
 } = require("../config/statuscodes");
+const fs = require("node:fs");
+const { storeImage } = require("../helpers/cloudinary");
 
 const isAdmin = (req) => req.user?.role === "admin";
 
@@ -43,6 +45,24 @@ exports.createBlog = async (req, res) => {
                 .json({ error: "Blog title already exists" });
         }
 
+        let featuredImageUrl = null;
+        const folderName = "blogs_data";
+
+        // ===============================
+        // Upload Featured Image If Provided
+        // ===============================
+        if (req.file) {
+            const uploadResult = await storeImage(
+                req.file.path,
+                `blog_${title}`,
+                folderName
+            );
+
+            featuredImageUrl = uploadResult.url;
+
+            fs.unlinkSync(req.file.path);
+        }
+
         // 🔒 Duplicate slug check
         const slugExists = await Blog.findOne({ where: { slug } });
         if (slugExists) {
@@ -54,6 +74,7 @@ exports.createBlog = async (req, res) => {
         const blog = await Blog.create({
             ...req.body,
             title,
+            featuredImage: featuredImageUrl,
         });
 
         return res.status(successCode).json({
@@ -132,7 +153,28 @@ exports.updateBlog = async (req, res) => {
             }
         }
 
-        await blog.update(req.body);
+        let featuredImageUrl = blog.featuredImage;
+        const folderName = "blogs_data";
+
+        // ===============================
+        // Upload Featured Image If Provided
+        // ===============================
+        if (req.file) {
+            const uploadResult = await storeImage(
+                req.file.path,
+                `blog_${title}`,
+                folderName
+            );
+
+            featuredImageUrl = uploadResult.url;
+
+            fs.unlinkSync(req.file.path);
+        }
+
+        await blog.update({
+            ...req.body,
+            featuredImage: featuredImageUrl,
+        });
 
         return res.status(successCode).json({
             message: "Blog updated successfully",

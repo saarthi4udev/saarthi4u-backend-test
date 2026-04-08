@@ -1,5 +1,7 @@
 const { Op } = require("sequelize");
 const EducationalPartner = require("../models/EducationalPartner");
+const fs = require("node:fs");
+const { storeImage } = require("../helpers/cloudinary");
 
 const isAdmin = (req) => req.user?.role === "admin";
 
@@ -30,7 +32,28 @@ exports.createEducationalPartner = async (req, res) => {
             });
         }
 
-        const partner = await EducationalPartner.create(req.body);
+        let image = null;
+        const folderName = "educational_partners_data";
+
+        // ===============================
+        // Upload Image If Provided
+        // ===============================
+        if (req.file) {
+            const uploadResult = await storeImage(
+                req.file.path,
+                `educational_partner_${name}`,
+                folderName
+            );
+
+            image = uploadResult.url;
+
+            fs.unlinkSync(req.file.path);
+        }
+
+        const partner = await EducationalPartner.create({
+            ...req.body,
+            image,
+        });
 
         return res.status(201).json({
             message: "University Partner created successfully",
@@ -124,7 +147,28 @@ exports.updateEducationalPartner = async (req, res) => {
             });
         }
 
-        await partner.update(req.body);
+        let image = partner.image;
+        const folderName = "educational_partners_data";
+
+        // ===============================
+        // Upload Featured Image If Provided
+        // ===============================
+        if (req.file) {
+            const uploadResult = await storeImage(
+                req.file.path,
+                `educational_partner_${name}`,
+                folderName
+            );
+
+            image = uploadResult.url;
+
+            fs.unlinkSync(req.file.path);
+        }
+
+        await partner.update({
+            ...req.body,
+            image,
+        });
 
         return res.status(200).json({
             message: "Updated successfully",

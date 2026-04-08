@@ -10,6 +10,8 @@ const {
   badGatewayCode,
 } = require("../config/statuscodes");
 const issueJwt = require("../utils/issueJWT");
+const { storeImage } = require("../helpers/cloudinary");
+const fs = require("node:fs");
 require("dotenv").config();
 
 // User Registration
@@ -253,6 +255,21 @@ exports.updateUserById = async (req, res) => {
       address,
       role,
       isActive,
+      age,
+      location,
+      qualification,
+      stream,
+      cgpa,
+      institute,
+      careerField,
+      careerRole,
+      hobbies,
+      shortTermGoal,
+      longTermGoal,
+      preferredLocation,
+      budget,
+      expectedSalary,
+      learningStyle,
     } = req.body;
 
     const user = await User.findByPk(id);
@@ -269,6 +286,24 @@ exports.updateUserById = async (req, res) => {
       });
     }
 
+    let profileImageUrl = null;
+    const folderName = "users_data";
+
+    // ===============================
+    // Upload Profile Image If Provided
+    // ===============================
+    if (req.file) {
+      const uploadResult = await storeImage(
+        req.file.path,
+        `user_${name}`,
+        folderName
+      );
+
+      profileImageUrl = uploadResult.url;
+
+      fs.unlinkSync(req.file.path);
+    }
+
     // Update fields if provided
     if (name) user.name = name;
     if (email) user.email = email;
@@ -277,6 +312,22 @@ exports.updateUserById = async (req, res) => {
     if (role) user.role = role;
     if (isActive !== undefined) user.isActive = isActive;
     if (password) user.password = password;
+    if (age !== undefined) user.age = age;
+    if (profileImageUrl) user.profileImage = profileImageUrl;
+    if (location) user.location = location;
+    if (qualification) user.qualification = qualification;
+    if (stream) user.stream = stream;
+    if (cgpa !== undefined) user.cgpa = cgpa;
+    if (institute) user.institute = institute;
+    if (careerField) user.careerField = careerField;
+    if (careerRole) user.careerRole = careerRole;
+    if (hobbies) user.hobbies = hobbies;
+    if (shortTermGoal) user.shortTermGoal = shortTermGoal;
+    if (longTermGoal) user.longTermGoal = longTermGoal;
+    if (preferredLocation) user.preferredLocation = preferredLocation;
+    if (budget !== undefined) user.budget = budget;
+    if (expectedSalary !== undefined) user.expectedSalary = expectedSalary;
+    if (learningStyle) user.learningStyle = learningStyle;
 
     await user.save();
 

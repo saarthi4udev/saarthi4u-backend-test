@@ -12,7 +12,7 @@ const Gallery = require("../models/Gallery");
 const Placement = require("../models/Placement");
 const Recruiter = require("../models/Recruiter");
 const { Op, fn, col, where, literal } = require("sequelize");
-
+const fs = require("node:fs");
 
 const {
     successCode,
@@ -20,6 +20,7 @@ const {
     duplicateDataCode,
     badGatewayCode,
 } = require("../config/statuscodes");
+const { storeImage } = require("../helpers/cloudinary");
 
 const isAdmin = (req) => req.user?.role === "admin";
 
@@ -35,34 +36,97 @@ exports.createCollege = async (req, res) => {
 
         let { name, slug, categoryId, type } = req.body;
 
-        // check if required fields are present
+        // 🔒 Required fields check
         if (!name || !slug || !categoryId || !type) {
-            return res.status(duplicateDataCode).json({ error: "Name, slug, categoryId and type are required" });
+            return res.status(duplicateDataCode).json({
+                error: "Name, slug, categoryId and type are required",
+            });
         }
 
-        if (!name || !name.trim()) {
-            return res.status(duplicateDataCode).json({ error: "College name required" });
+        if (!name.trim()) {
+            return res.status(duplicateDataCode).json({
+                error: "College name required",
+            });
         }
 
         name = name.trim();
 
-        // duplicate name check (case-insensitive)
+        // 🔒 Normalize slug
+        slug = slug.toLowerCase().trim().replace(/\s+/g, "-");
+
+        // 🔒 Validate type
+        if (!["college", "university"].includes(type)) {
+            return res.status(400).json({ error: "Invalid type" });
+        }
+
+        // 🔒 Duplicate name check
         const existingCollege = await College.findOne({
             where: where(fn("LOWER", col("name")), name.toLowerCase()),
         });
+
         if (existingCollege) {
-            return res.status(duplicateDataCode).json({ error: "College name already exists" });
+            return res.status(duplicateDataCode).json({
+                error: "College name already exists",
+            });
         }
 
-        // 🔒 duplicate slug check
-        if (slug) {
-            const exists = await College.findOne({ where: { slug } });
-            if (exists) {
-                return res.status(duplicateDataCode).json({ error: "Slug already exists" });
+        // 🔒 Duplicate slug check
+        const slugExists = await College.findOne({ where: { slug } });
+        if (slugExists) {
+            return res.status(duplicateDataCode).json({
+                error: "Slug already exists",
+            });
+        }
+
+        // 📁 Files
+        const logo = req.files?.logo?.[0] || null;
+        const bannerImg = req.files?.bannerImg?.[0] || null;
+
+        let logoUrl = null;
+        let bannerUrl = null;
+
+        if (logo) {
+            const upload = await storeImage(
+                logo.path,
+                `college_${name}_logo`,
+                "colleges_data"
+            );
+            logoUrl = upload.url;
+            fs.unlink(logo.path, () => { });
+        }
+
+        if (bannerImg) {
+            const upload = await storeImage(
+                bannerImg.path,
+                `college_${name}_banner`,
+                "colleges_data"
+            );
+            bannerUrl = upload.url;
+            fs.unlink(bannerImg.path, () => { });
+        }
+
+        // ✅ Dynamic safe fields
+        const allowedFields = Object.keys(College.rawAttributes);
+        const blockedFields = ["id", "createdAt", "updatedAt", "deletedAt"];
+
+        const createData = {};
+
+        allowedFields.forEach((field) => {
+            if (
+                req.body[field] !== undefined &&
+                !blockedFields.includes(field)
+            ) {
+                createData[field] = req.body[field];
             }
-        }
+        });
 
-        const college = await College.create(req.body);
+        // Override critical fields
+        createData.name = name;
+        createData.slug = slug;
+        createData.logo = logoUrl;
+        createData.bannerImg = bannerUrl;
+
+        const college = await College.create(createData);
 
         res.status(successCode).json({
             message: "College created successfully",
@@ -216,27 +280,90 @@ exports.updateCollege = async (req, res) => {
         }
 
         const { id } = req.params;
+
         const college = await College.findByPk(id);
 
         if (!college) {
-            return res.status(notFoundCode).json({ error: "College not found" });
+            return res.status(notFoundCode).json({
+                error: "College not found",
+            });
         }
 
-        // 🔒 slug duplicate check
-        if (req.body.slug && req.body.slug !== college.slug) {
+        let { slug, type, name } = req.body;
+
+        // 🔒 Slug check
+        if (slug && slug !== college.slug) {
+            slug = slug.toLowerCase().trim().replace(/\s+/g, "-");
+
             const exists = await College.findOne({
                 where: {
-                    slug: req.body.slug,
+                    slug,
                     id: { [Op.ne]: id },
                 },
             });
 
             if (exists) {
-                return res.status(duplicateDataCode).json({ error: "Slug already exists" });
+                return res.status(duplicateDataCode).json({
+                    error: "Slug already exists",
+                });
             }
         }
 
-        await college.update(req.body);
+        // 🔒 Type validation
+        if (type && !["college", "university"].includes(type)) {
+            return res.status(400).json({ error: "Invalid type" });
+        }
+
+        // 📁 Files
+        const logo = req.files?.logo?.[0] || null;
+        const bannerImg = req.files?.bannerImg?.[0] || null;
+
+        let logoUrl = college.logo;
+        let bannerUrl = college.bannerImg;
+
+        if (logo) {
+            const upload = await storeImage(
+                logo.path,
+                `college_${name || college.name}_logo`,
+                "colleges_data"
+            );
+            logoUrl = upload.url;
+            fs.unlink(logo.path, () => { });
+        }
+
+        if (bannerImg) {
+            const upload = await storeImage(
+                bannerImg.path,
+                `college_${name || college.name}_banner`,
+                "colleges_data"
+            );
+            bannerUrl = upload.url;
+            fs.unlink(bannerImg.path, () => { });
+        }
+
+        // ✅ Dynamic safe update
+        const allowedFields = Object.keys(College.rawAttributes);
+        const blockedFields = ["id", "createdAt", "updatedAt", "deletedAt"];
+
+        const updateData = {};
+
+        allowedFields.forEach((field) => {
+            if (
+                req.body[field] !== undefined &&
+                !blockedFields.includes(field)
+            ) {
+                updateData[field] = req.body[field];
+            }
+        });
+
+        // Override processed values
+        if (slug) updateData.slug = slug;
+        if (name) updateData.name = name.trim();
+
+        updateData.logo = logoUrl;
+        updateData.bannerImg = bannerUrl;
+
+        await college.update(updateData);
 
         res.status(successCode).json({
             message: "College updated successfully",
