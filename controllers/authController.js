@@ -180,7 +180,17 @@ exports.loginWithPhone = async (req, res) => {
 // Get User Profile
 exports.getProfile = async (req, res) => {
   try {
-    const user = await User.findByPk(req.user.id, {
+    const cookieToken = req.cookies?.token;
+    const authHeader = req.headers.authorization;
+    const token = cookieToken || (authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : null);
+
+    if (!token) {
+      return res.status(401).json({ error: "Access Denied. No Token Provided." });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await User.findByPk(decoded.id, {
       attributes: { exclude: ["password"] },
     });
 
