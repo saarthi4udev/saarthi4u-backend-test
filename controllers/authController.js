@@ -180,10 +180,7 @@ exports.loginWithPhone = async (req, res) => {
 // Get User Profile
 exports.getProfile = async (req, res) => {
   try {
-    const decoded = jwt.verify(req.cookies?.token, process.env.JWT_SECRET);
-    let userId = decoded;
-
-    const user = await User.findByPk(userId.id, {
+    const user = await User.findByPk(req.user.id, {
       attributes: { exclude: ["password"] },
     });
 
