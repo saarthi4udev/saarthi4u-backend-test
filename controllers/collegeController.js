@@ -471,65 +471,92 @@ exports.getFilterData = async (req, res) => {
  */
 exports.filterColleges = async (req, res) => {
     try {
-        const { city, type, categoryId, minRating, minFee, maxFee } = req.query;
+        const {
+            city,
+            type,
+            categoryId,
+            minRating,
+            minFee,
+            maxFee,
+            page = 1,
+            limit = 10,
+        } = req.query;
 
-        const where = {};
-        if (city) where.city = city;
-        if (type) where.type = type;
-        if (categoryId) where.categoryId = categoryId;
+        const offset = (page - 1) * limit;
 
-        const colleges = await College.findAll({
-            where,
+        const whereCondition = {};
+        if (city) whereCondition.city = city;
+        if (type) whereCondition.type = type;
+        if (categoryId) whereCondition.categoryId = categoryId;
+
+        const { count, rows } = await College.findAndCountAll({
+            where: whereCondition,
+
+            attributes: [
+                "id",
+                "name",
+                "city",
+                "type",
+                "logo",
+                [fn("AVG", col("Reviews.rating")), "avgRating"],
+            ],
+
             include: [
-                { model: Category },
-
-                //  Filter by fee range
                 {
-                    model: Course,
-                    required: !!(minFee || maxFee),
-                    include: [
-                        {
-                            model: Fee,
-                            required: !!(minFee || maxFee),
-                            where: {
-                                ...(minFee && { totalFee: { [Op.gte]: minFee } }),
-                                ...(maxFee && { totalFee: { [Op.lte]: maxFee } }),
-                            },
-                        },
-                    ],
+                    model: Category,
+                    attributes: ["id", "name"],
                 },
 
-                //  Reviews only for rating calculation
                 {
                     model: Review,
                     attributes: [],
                 },
+
+                {
+                    model: Course,
+                    attributes: [],
+                    required: !!(minFee || maxFee),
+                    include: [
+                        {
+                            model: Fee,
+                            attributes: [],
+                            required: !!(minFee || maxFee),
+                            where: {
+                                ...(minFee && {
+                                    totalFee: { [Op.gte]: Number(minFee) },
+                                }),
+                                ...(maxFee && {
+                                    totalFee: { [Op.lte]: Number(maxFee) },
+                                }),
+                            },
+                        },
+                    ],
+                },
             ],
 
-            attributes: {
-                include: [
-                    // ⭐ Calculate average rating via subquery (no GROUP BY needed)
-                    [
-                        literal(`(
-              SELECT AVG(r.rating)
-              FROM Reviews r
-              WHERE r.collegeId = College.id
-            )`),
-                        "avgRating",
-                    ],
-                ],
-            },
+            group: ["College.id", "Category.id"],
 
-            // Rating filter using HAVING-like condition
             having: minRating
-                ? literal(`avgRating >= ${Number(minRating)}`)
+                ? literal(`AVG(Reviews.rating) >= ${Number(minRating)}`)
                 : undefined,
+
+            limit: parseInt(limit),
+            offset: parseInt(offset),
 
             subQuery: false,
             distinct: true,
         });
 
-        res.json({ data: colleges });
+        res.json({
+            data: rows,
+            pagination: {
+                totalItems: count.length ? count.length : count,
+                currentPage: Number(page),
+                totalPages: Math.ceil(
+                    (count.length ? count.length : count) / limit
+                ),
+            },
+        });
     } catch (error) {
         console.error("Filter colleges error:", error);
         res.status(500).json({ error: "Server error" });
@@ -543,66 +570,103 @@ exports.compareColleges = async (req, res) => {
     try {
         const { collegeIds } = req.body;
 
-        if (!collegeIds || !collegeIds.length) {
-            return res.status(400).json({ error: "collegeIds required" });
+        if (!collegeIds || collegeIds.length < 2 || collegeIds.length > 5) {
+            return res.status(400).json({
+                error: "Minimum 2 & Maximum 5 colleges can be compared",
+            });
         }
 
-        if (collegeIds.length < 2 || collegeIds.length > 5) {
-            return res.status(400).json({ error: "Minimum 2 & Maximum 5 colleges can be compared" });
-        }
+        // ✅ STEP 1: AGGREGATION QUERY (FAST)
+        const stats = await College.findAll({
+            where: { id: collegeIds },
+            attributes: [
+                "id",
+                [fn("AVG", col("Reviews.rating")), "avgRating"],
+                [fn("COUNT", col("Faculties.id")), "facultyCount"],
+            ],
+            include: [
+                { model: Review, attributes: [] },
+                { model: Faculty, attributes: [] },
+            ],
+            group: ["College.id"],
+            raw: true,
+        });
 
-        // fetch all colleges data
+        const statsMap = {};
+        stats.forEach((s) => {
+            statsMap[s.id] = {
+                avgRating: Number(s.avgRating) || 0,
+                facultyCount: Number(s.facultyCount) || 0,
+            };
+        });
+
+        // ✅ STEP 2: NORMAL QUERY (NO GROUP BY ISSUE)
         const colleges = await College.findAll({
             where: { id: collegeIds },
             include: [
-                Category,
-                { model: Faculty },
-                { model: Review },
-                { model: Placement },
-                { model: Recruiter },
-                { model: Facility },
+                { model: Category, attributes: ["name"] },
+
+                {
+                    model: Placement,
+                    attributes: ["highestPackage", "averagePackage"],
+                },
+
+                {
+                    model: Recruiter,
+                    attributes: ["id"],
+                },
+
+                {
+                    model: Facility,
+                    attributes: ["name"],
+                },
+
                 {
                     model: Course,
-                    include: [Fee],
+                    attributes: ["name", "duration", "totalSeats"],
+                    include: [
+                        {
+                            model: Fee,
+                            attributes: ["totalFee"],
+                        },
+                    ],
                 },
             ],
         });
 
+        // ✅ STEP 3: MERGE + CALCULATE
         const comparison = colleges.map((college) => {
-            // calculate avg rating
-            const avgRating =
-                college.Reviews?.length
-                    ? college.Reviews.reduce((sum, r) => sum + r.rating, 0) /
-                    college.Reviews.length
-                    : 0;
+            const stat = statsMap[college.id] || {};
+
+            const avgRating = stat.avgRating || 0;
+            const facultyCount = stat.facultyCount || 0;
 
             const allFees = college.Courses.flatMap((c) =>
                 c.Fees.map((f) => f.totalFee)
             );
 
-            // calculate avg fees
             const avgFees =
                 allFees.length > 0
-                    ? Math.round(allFees.reduce((a, b) => a + b, 0) / allFees.length)
+                    ? Math.round(
+                        allFees.reduce((a, b) => a + b, 0) / allFees.length
+                    )
                     : 0;
-
-            // faculty count
-            const facultyCount = college.Faculties?.length || 0;
-
 
             const totalSeats = college.Courses.reduce(
                 (sum, c) => sum + (c.totalSeats || 0),
                 0
             );
 
-            //faculty to student ratio
             const studentFacultyRatio =
                 facultyCount && totalSeats
                     ? Math.round(totalSeats / facultyCount)
                     : null;
 
-            const highestPackage = college.Placements?.[0]?.highestPackage || 0;
-            const averagePackage = college.Placements?.[0]?.averagePackage || 0;
+            const highestPackage =
+                college.Placements?.[0]?.highestPackage || 0;
+            const averagePackage =
+                college.Placements?.[0]?.averagePackage || 0;
+
             const recruiterCount = college.Recruiters?.length || 0;
 
             const placementScore =
@@ -635,8 +699,11 @@ exports.compareColleges = async (req, res) => {
                 highlights: [
                     avgRating >= 4.5 && "Top Rated",
                     highestPackage >= 2000000 && "Excellent Placements",
-                    recruiterCount >= 50 && "Strong Industry Connections",
-                    studentFacultyRatio && studentFacultyRatio <= 15 && "Low Student-Faculty Ratio",
+                    recruiterCount >= 50 &&
+                    "Strong Industry Connections",
+                    studentFacultyRatio &&
+                    studentFacultyRatio <= 15 &&
+                    "Low Student-Faculty Ratio",
                 ].filter(Boolean),
 
                 facilities: college.Facilities?.map((f) => f.name),
@@ -650,43 +717,41 @@ exports.compareColleges = async (req, res) => {
             };
         });
 
-        // Sort by overall score
+        // ✅ SORT + VERDICT
         comparison.sort((a, b) => b.overallScore - a.overallScore);
 
-        // CATEGORY WINNERS
         const bestOverall = comparison[0];
-
-        const bestRating = [...comparison].sort((a, b) => b.avgRating - a.avgRating)[0];
+        const bestRating = [...comparison].sort(
+            (a, b) => b.avgRating - a.avgRating
+        )[0];
         const bestPlacement = [...comparison].sort(
             (a, b) => b.placementScore - a.placementScore
         )[0];
         const bestROI = [...comparison].sort(
             (a, b) => a.avgFees - b.avgFees
         )[0];
+
         const bestFacultyRatio = [...comparison]
             .filter((c) => c.studentFacultyRatio)
             .sort((a, b) => a.studentFacultyRatio - b.studentFacultyRatio)[0];
 
-        // Final Verdict Builder
-        const verdict = {
-            winner: bestOverall.name,
-            summary: `${bestOverall.name} stands out as the best overall choice based on ratings, placements, and faculty strength.`,
-            categoryLeaders: {
-                bestOverall: bestOverall.name,
-                bestRating: bestRating?.name,
-                bestPlacement: bestPlacement?.name,
-                bestROI: bestROI?.name,
-                bestFacultyRatio: bestFacultyRatio?.name,
-            },
-        };
-
-        res.status(successCode).json({
+        res.json({
             data: comparison,
-            verdict,
+            verdict: {
+                winner: bestOverall.name,
+                summary: `${bestOverall.name} is the best overall choice.`,
+                categoryLeaders: {
+                    bestOverall: bestOverall.name,
+                    bestRating: bestRating?.name,
+                    bestPlacement: bestPlacement?.name,
+                    bestROI: bestROI?.name,
+                    bestFacultyRatio: bestFacultyRatio?.name,
+                },
+            },
         });
     } catch (error) {
         console.error("Compare colleges error:", error);
-        res.status(badGatewayCode).json({ error: "Server error" });
+        res.status(500).json({ error: "Server error" });
     }
 };
 
