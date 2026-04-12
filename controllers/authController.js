@@ -285,32 +285,33 @@ exports.updateUserById = async (req, res) => {
       return res.status(notFoundCode).json({ error: "User not found" });
     }
 
-    // check role should be only user, admin
-    const validRoles = ["user", "admin"];
-    if (!validRoles.includes(role)) {
-      return res.status(duplicateDataCode).json({
-        error: "Invalid role. Allowed roles are: user, admin.",
-      });
-    }
-
     let profileImageUrl = null;
     const folderName = "users_data";
 
-    // ===============================
-    // Upload Profile Image If Provided
-    // ===============================
+    // ✅ Wrap image upload in its own try/catch
     if (req.file) {
-      const uploadResult = await storeImage(
-        req.file.path,
-        `user_${name}`,
-        folderName
-      );
+      try {
+        console.log("📁 Uploading file:", req.file.path);
 
-      profileImageUrl = uploadResult.url;
+        const uploadResult = await storeImage(
+          req.file.path,
+          `user_${user.name || user.id}`,
+          folderName
+        );
 
-      fs.unlinkSync(req.file.path);
+        profileImageUrl = uploadResult.url;
+
+      } catch (uploadError) {
+        console.error("❌ Image upload failed:", uploadError); // ← check this too
+      } finally {
+        if (fs.existsSync(req.file.path)) {
+          fs.unlinkSync(req.file.path);
+        }
+      }
     }
 
+    // Add this log too
+    console.log("💾 Saving user with profileImage:", profileImageUrl);
     // Update fields if provided
     if (name) user.name = name;
     if (email) user.email = email;
