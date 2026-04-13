@@ -156,7 +156,7 @@ exports.updateEducationalPartner = async (req, res) => {
         if (req.file) {
             const uploadResult = await storeImage(
                 req.file.path,
-                `educational_partner_${name}`,
+                `educational_partner_${id}`,
                 folderName
             );
 
