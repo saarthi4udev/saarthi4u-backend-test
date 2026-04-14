@@ -17,7 +17,6 @@ const EducationalPartner = sequelize.define(
 
         slug: {
             type: DataTypes.STRING,
-            unique: true,
         },
 
         image: {

@@ -145,7 +145,7 @@ router.get("/filter",
     loggerMiddleware, filterColleges);
 
 /** Get college compare data */
-router.get("/compare",
+router.post("/compare",
     [body("collegeIds").isArray({ min: 2, max: 4 }).withMessage("College IDs must be an array of 2 to 4 integers"),
     ], loggerMiddleware, compareColleges);
 
