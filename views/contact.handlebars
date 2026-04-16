@@ -1,0 +1,99 @@
+<html lang="en-US">
+<head>
+  <meta charset="utf-8" />
+  <title>Saarthi4u Contact Enquiry</title>
+</head>
+
+<body style="margin:0; background-color:#f2f3f8; font-family: Arial, sans-serif;">
+  <table width="100%" bgcolor="#f2f3f8">
+    <tr>
+      <td>
+        <table style="max-width:670px; margin:0 auto;">
+          
+          <tr><td style="height:60px;"></td></tr>
+
+          <!-- Logo -->
+          <tr>
+            <td style="text-align:center;">
+              <img src="https://res.cloudinary.com/drylre0b9/image/upload/v1776353487/new_logo_l9tsxl.png" width="170" alt="Saarthi4u"/>
+            </td>
+          </tr>
+
+          <tr><td style="height:20px;"></td></tr>
+
+          <!-- Card -->
+          <tr>
+            <td>
+              <table width="95%" align="center"
+                style="background:#fff; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,.06);">
+
+                <tr><td style="height:35px;"></td></tr>
+
+                <tr>
+                  <td style="padding:0 35px;">
+                    
+                    <!-- Heading -->
+                    <h2 style="margin:0; color:#171e4c;">
+                      New Contact Request
+                    </h2>
+
+                    <div style="width:70px; height:3px; background:#30d8c9; margin:15px 0 25px;"></div>
+
+                    <!-- Details -->
+                    <p style="font-size:15px; color:#444; line-height:24px; margin:0;">
+                      
+                      <strong>Name:</strong> {{#if name}}{{name}}{{else}}N/A{{/if}} <br/>
+
+                      <strong>Email:</strong> {{#if email}}{{email}}{{else}}N/A{{/if}} <br/>
+
+                      <strong>Phone:</strong> {{#if phone}}{{phone}}{{else}}N/A{{/if}} <br/>
+
+                      <strong>Subject:</strong> {{#if subject}}{{subject}}{{else}}N/A{{/if}} <br/>
+
+                      <strong>Course Interest:</strong> {{#if courseInterest}}{{courseInterest}}{{else}}N/A{{/if}} <br/>
+
+                      <strong>Preferred Location:</strong> {{#if preferredLocation}}{{preferredLocation}}{{else}}N/A{{/if}}
+
+                    </p>
+
+                    <!-- Message Box -->
+                    <div style="margin-top:20px; padding:15px; background:#f9f9f9; border-left:4px solid #FAFA33;">
+                      <strong style="color:#171e4c;">Message:</strong>
+                      <p style="margin:8px 0 0; color:#555;">
+                        {{#if message}}{{message}}{{else}}No message provided{{/if}}
+                      </p>
+                    </div>
+
+                    <!-- CTA -->
+                    <div style="text-align:center; margin-top:30px;">
+                      <a href="https://saarthi4u-admin-live-opal.vercel.app/" target="_blank"
+                        style="background:#171e4c; color:#fff; padding:12px 28px; border-radius:50px; text-decoration:none; font-size:14px;">
+                        View in Dashboard
+                      </a>
+                    </div>
+
+                  </td>
+                </tr>
+
+                <tr><td style="height:35px;"></td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr><td style="height:20px;"></td></tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="text-align:center; font-size:12px; color:#888;">
+              © {{year}} Saarthi4u · All Rights Reserved
+            </td>
+          </tr>
+
+          <tr><td style="height:40px;"></td></tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

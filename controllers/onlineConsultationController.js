@@ -4,6 +4,7 @@ const {
     badGatewayCode,
     notFoundCode,
 } = require("../config/statuscodes");
+const sendMail = require("../helpers/sendMail");
 
 const isAdmin = (req) => req.user?.role === "admin";
 
@@ -22,7 +23,7 @@ exports.createConsultation = async (req, res) => {
             sourcePage,
         } = req.body;
 
-        if (!fullName || !email || !phone || !courseInterest) {
+        if (!fullName || !phone || !courseInterest) {
             return res.status(400).json({
                 error: "Required fields missing",
             });
@@ -39,6 +40,27 @@ exports.createConsultation = async (req, res) => {
             message,
             sourcePage,
         });
+
+        try {
+            await sendMail({
+                to: "info@saarthi4u.com",
+                subject: "New Consultation Request",
+                template: "consultation",
+                context: {
+                    fullName: fullName || null,
+                    email: email || null,
+                    phone: phone || null,
+                    courseInterest: courseInterest || null,
+                    preferredStateCity: preferredStateCity || null,
+                    preferredConsultationDate: preferredConsultationDate || null,
+                    preferredTime: preferredTime || null,
+                    message: message || null,
+                    sourcePage: sourcePage || null,
+                },
+            });
+        } catch (error) {
+            console.error("Consultation email error:", error);
+        }
 
         return res.status(successCode).json({
             message: "Consultation request submitted successfully",

@@ -4,6 +4,7 @@ const {
     badGatewayCode,
     notFoundCode,
 } = require("../config/statuscodes");
+const sendMail = require("../helpers/sendMail");
 
 const isAdmin = (req) => req.user?.role === "admin";
 
@@ -12,7 +13,7 @@ const isAdmin = (req) => req.user?.role === "admin";
  */
 exports.createContact = async (req, res) => {
     try {
-        const { name, email, subject, message, courseInterest, preferredLocation } = req.body;
+        const { name, email, phone, subject, message, courseInterest, preferredLocation } = req.body;
 
         if (!name || !email || !subject || !message || !courseInterest || !preferredLocation) {
             return res.status(400).json({
@@ -21,6 +22,25 @@ exports.createContact = async (req, res) => {
         }
 
         const contact = await Contact.create(req.body);
+
+        try {
+            await sendMail({
+                to: "info@saarthi4u.com",
+                subject: "New Contact Request",
+                template: "contact",
+                context: {
+                    name: name || null,
+                    email: email || null,
+                    phone: phone || null,
+                    subject: subject || null,
+                    message: message || null,
+                    courseInterest: courseInterest || null,
+                    preferredLocation: preferredLocation || null,
+                },
+            });
+        } catch (error) {
+            console.error("Contact email error:", error);
+        }
 
         return res.status(successCode).json({
             message: "Your message has been submitted successfully",

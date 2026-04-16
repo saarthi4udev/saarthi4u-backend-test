@@ -18,8 +18,10 @@ router.post(
     loggerMiddleware,
     [
         body("fullName").isString().isLength({ min: 2 }),
-        body("email").isEmail(),
-        body("phone").isString().isLength({ min: 7, max: 15 }),
+        body("email")
+            .optional({ nullable: true, checkFalsy: true })
+            .isEmail()
+            .withMessage("Invalid email"), body("phone").isString().isLength({ min: 7, max: 15 }),
 
         body("courseInterest").isIn([
             "engineering",

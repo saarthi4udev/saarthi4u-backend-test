@@ -43,6 +43,10 @@ const Testimonial = sequelize.define(
                 max: 5,
             },
         },
+        isFeatured: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
+        },
 
         deletedAt: DataTypes.DATE,
     },

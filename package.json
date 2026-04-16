@@ -35,6 +35,8 @@
     "morgan": "^1.10.0",
     "multer": "^2.1.1",
     "mysql2": "^3.13.0",
+    "nodemailer": "^8.0.5",
+    "nodemailer-express-handlebars": "^7.0.0",
     "p-limit": "^2.3.0",
     "path": "^0.12.7",
     "pm2": "^6.0.5",

@@ -87,7 +87,10 @@ exports.getAllEducationalPartners = async (req, res) => {
             where: whereClause,
             limit: parseInt(limit),
             offset: parseInt(offset),
-            order: [["createdAt", "DESC"]],
+            order: [
+                ["isFeatured", "DESC"],
+                ["createdAt", "DESC"],
+            ],
         });
 
         return res.status(200).json({

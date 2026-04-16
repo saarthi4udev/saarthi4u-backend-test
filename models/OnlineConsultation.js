@@ -17,7 +17,7 @@ const OnlineConsultation = sequelize.define(
 
         email: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
             validate: {
                 isEmail: true,
             },

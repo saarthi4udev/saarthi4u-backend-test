@@ -1,0 +1,111 @@
+<html lang="en-US">
+<head>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+  <title>Saarthi4u Consultation Enquiry</title>
+  <meta name="description" content="New Consultation Enquiry Email Template." />
+  <style type="text/css">
+    a:hover { text-decoration: underline !important; }
+  </style>
+</head>
+
+<body style="margin: 0px; background-color: #f2f3f8;">
+  <table width="100%" bgcolor="#f2f3f8" style="font-family: 'Open Sans', sans-serif;">
+    <tr>
+      <td>
+        <table style="max-width:670px; margin:0 auto;">
+          
+          <tr><td style="height:80px;"></td></tr>
+
+          <!-- Logo -->
+          <tr>
+            <td style="text-align:center;">
+              <a href="#" target="_blank">
+                <img
+                  width="180"
+                  src="https://res.cloudinary.com/drylre0b9/image/upload/v1776353487/new_logo_l9tsxl.png"
+                  alt="Saarthi4u Logo"
+                />
+              </a>
+            </td>
+          </tr>
+
+          <tr><td style="height:20px;"></td></tr>
+
+          <!-- Main Card -->
+          <tr>
+            <td>
+              <table
+                width="95%"
+                align="center"
+                style="background:#fff; border-radius:6px; text-align:left; box-shadow:0 6px 18px rgba(0,0,0,.06);"
+              >
+                <tr><td style="height:40px;"></td></tr>
+
+                <tr>
+                  <td style="padding:0 35px;">
+                    
+                    <!-- Heading -->
+                    <h1 style="color:#171e4c; font-size:28px; margin:0;">
+                      New Consultation Enquiry Received
+                    </h1>
+
+                    <span style="display:block; margin:20px 0; border-bottom:2px solid #30d8c9; width:80px;"></span>
+
+                    <!-- Content -->
+                    <p style="font-size:15px; color:#455056; line-height:24px;">
+                      
+                      <strong>Full Name:</strong> {{#if fullName}}{{fullName}}{{else}}N/A{{/if}} <br/>
+
+                      <strong>Email:</strong> {{#if email}}{{email}}{{else}}N/A{{/if}} <br/>
+
+                      <strong>Phone:</strong> {{#if phone}}{{phone}}{{else}}N/A{{/if}} <br/>
+
+                      <strong>Course Interest:</strong> {{#if courseInterest}}{{courseInterest}}{{else}}N/A{{/if}} <br/>
+
+                      <strong>Preferred Location:</strong> {{#if preferredStateCity}}{{preferredStateCity}}{{else}}N/A{{/if}} <br/>
+
+                      <strong>Consultation Date:</strong> {{#if preferredConsultationDate}}{{preferredConsultationDate}}{{else}}N/A{{/if}} <br/>
+
+                      <strong>Preferred Time:</strong> {{#if preferredTime}}{{preferredTime}}{{else}}N/A{{/if}} <br/>
+
+                      <strong>Message:</strong><br/>
+                      {{#if message}}{{message}}{{else}}No message provided{{/if}}
+
+                    </p>
+
+                    <!-- CTA -->
+                    <div style="text-align:center; margin-top:30px;">
+                      <a
+                        href="https://saarthi4u-admin-live-opal.vercel.app/"
+                        target="_blank"
+                        style="background:#171e4c; color:#fff; padding:12px 26px; border-radius:50px; font-size:14px; text-decoration:none;"
+                      >
+                        View in Dashboard
+                      </a>
+                    </div>
+
+                  </td>
+                </tr>
+
+                <tr><td style="height:40px;"></td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr><td style="height:20px;"></td></tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="text-align:center; font-size:13px; color:#888;">
+              © {{year}} Saarthi4u. All rights reserved.
+            </td>
+          </tr>
+
+          <tr><td style="height:40px;"></td></tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

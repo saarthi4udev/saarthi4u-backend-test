@@ -39,6 +39,10 @@ const EducationalPartner = sequelize.define(
             type: DataTypes.BOOLEAN,
             defaultValue: true,
         },
+        isFeatured: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
+        },
     },
     {
         timestamps: true,

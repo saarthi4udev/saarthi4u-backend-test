@@ -23,6 +23,9 @@ const testimonialRoutes = require("./testimonialRoutes");
 const onlineConsultationRoutes = require("./onlineConsultationRoutes");
 const mentorRoutes = require("./mentorRoutes");
 const educationalPartnerRoutes = require("./educationalPartnerRoutes");
+const carouselRoutes = require("./carouselRoutes");
+const associateUniversityRoutes = require("./associateUniversityRoutes");
+const homeSectionRoutes = require("./homeSectionRoutes");
 
 const index = (app) => {
 
@@ -51,6 +54,9 @@ const index = (app) => {
   app.use("/api/consultation", onlineConsultationRoutes);
   app.use("/api/mentor", mentorRoutes);
   app.use("/api/partner", educationalPartnerRoutes);
+  app.use("/api/carousel", carouselRoutes);
+  app.use("/api/associate-university", associateUniversityRoutes);
+  app.use("/api/home-section", homeSectionRoutes);
 
   // 404 handler - must be after all routes
   app.all("*", (req, res) => {

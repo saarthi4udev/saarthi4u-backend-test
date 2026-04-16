@@ -27,6 +27,7 @@ router.post(
         body("role").isString().isLength({ min: 2 }),
         body("city").isString().isLength({ min: 2 }),
         body("rating").isInt({ min: 1, max: 5 }),
+        body("isFeatured").optional().isBoolean(),
     ],
     createTestimonial
 );

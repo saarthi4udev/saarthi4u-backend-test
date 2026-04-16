@@ -16,7 +16,7 @@ exports.createTestimonial = async (req, res) => {
             return res.status(403).json({ error: "Access denied" });
         }
 
-        const { quote, name, role, city, rating } = req.body;
+        const { quote, name, role, city, rating, isFeatured } = req.body;
 
         let avatarUrl = null;
         const folderName = "testimonials_data";
@@ -48,6 +48,7 @@ exports.createTestimonial = async (req, res) => {
             city,
             rating,
             avatarUrl,
+            isFeatured: isFeatured || false,
         });
 
 
@@ -76,7 +77,10 @@ exports.getAllTestimonials = async (req, res) => {
         const testimonials = await Testimonial.findAndCountAll({
             limit,
             offset,
-            order: [["createdAt", "DESC"]],
+            order: [
+                ["isFeatured", "DESC"],
+                ["createdAt", "DESC"],
+            ],
         });
 
         return res.status(successCode).json({
@@ -94,6 +98,7 @@ exports.getAllTestimonials = async (req, res) => {
         });
     }
 };
+
 
 /** Get Single Testimonial */
 exports.getTestimonialById = async (req, res) => {

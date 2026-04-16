@@ -29,6 +29,7 @@ router.post(
         body("description").optional().isString(),
         body("services").optional().isString(),
         body("tag").optional().isString(),
+        body("isFeatured").optional().isBoolean()
     ],
     createEducationalPartner
 );
