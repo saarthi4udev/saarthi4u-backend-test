@@ -60,9 +60,6 @@ exports.createContact = async (req, res) => {
  */
 exports.getAllContacts = async (req, res) => {
     try {
-        if (!isAdmin(req)) {
-            return res.status(403).json({ error: "Access denied" });
-        }
 
         const { page = 1, limit = 10 } = req.query;
         const offset = (page - 1) * limit;
@@ -93,9 +90,6 @@ exports.getAllContacts = async (req, res) => {
  */
 exports.getContactById = async (req, res) => {
     try {
-        if (!isAdmin(req)) {
-            return res.status(403).json({ error: "Access denied" });
-        }
 
         const contact = await Contact.findByPk(req.params.id);
 
@@ -122,9 +116,6 @@ exports.getContactById = async (req, res) => {
  */
 exports.deleteContact = async (req, res) => {
     try {
-        if (!isAdmin(req)) {
-            return res.status(403).json({ error: "Access denied" });
-        }
 
         const contact = await Contact.findByPk(req.params.id);
 

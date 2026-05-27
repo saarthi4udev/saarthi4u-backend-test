@@ -78,9 +78,6 @@ exports.createConsultation = async (req, res) => {
 /** Get All (Admin) */
 exports.getAllConsultations = async (req, res) => {
     try {
-        if (!isAdmin(req)) {
-            return res.status(403).json({ error: "Access denied" });
-        }
 
         const { page = 1, limit = 10 } = req.query;
         const offset = (page - 1) * limit;
@@ -132,9 +129,6 @@ exports.getConsultationById = async (req, res) => {
 /** Delete (Admin) */
 exports.deleteConsultation = async (req, res) => {
     try {
-        if (!isAdmin(req)) {
-            return res.status(403).json({ error: "Access denied" });
-        }
 
         const consultation = await OnlineConsultation.findByPk(req.params.id);
 
